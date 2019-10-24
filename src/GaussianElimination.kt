@@ -1,40 +1,31 @@
 class GaussianElimination {
     private var matrixSize: Int = 0
+    private lateinit var matrix: Array<DoubleArray>
+    private lateinit var answers: DoubleArray
 
-    fun solve(matrix: Array<DoubleArray>, answers: DoubleArray) {
+    fun solve(inputMatrix: Array<DoubleArray>, inputAnswers: DoubleArray) {
+
+        matrix = inputMatrix
+        answers = inputAnswers
 
         matrixSize = answers.size
-        matrix.getMatrixViewFrom()
+        matrix.print()
 
         for (columnNum in 0 until matrixSize) {
 
             val pivotRowNumber = findPivotRowNumber(columnNum, matrix)
 
-            matrix.swapRowInMatrix(columnNum, pivotRowNumber)
+            matrix.swapRows(columnNum, pivotRowNumber)
 
-            answers.swapAnswers(columnNum, pivotRowNumber)
+            answers.swap(columnNum, pivotRowNumber)
 
-            /** pivot within matrix and answers  */
-            for (rowNum in columnNum + 1 until matrixSize) {
-                val factor = matrix[rowNum][columnNum] / matrix[columnNum][columnNum]
-                answers[rowNum] -= factor * answers[columnNum]
-                for (j in columnNum until matrixSize)
-                    matrix[rowNum][j] -= factor * matrix[columnNum][j]
-            }
+            pivotWithin(columnNum)
         }
 
-        /** Print row echelon form  */
-        printRowEchelonForm(matrix, answers)
+        printRowEchelonForm()
 
-        /** back substitution  */
-        val solution = DoubleArray(matrixSize)
-        for (i in matrixSize - 1 downTo 0) {
-            var sum = 0.0
-            for (j in i + 1 until matrixSize)
-                sum += matrix[i][j] * solution[j]
-            solution[i] = (answers[i] - sum) / matrix[i][i]
-        }
-        /** Print solution  */
+        val solution = getSolution()
+
         printSolution(solution)
     }
 
@@ -53,41 +44,70 @@ class GaussianElimination {
         return pivotRowNumber
     }
 
-    private fun Array<DoubleArray>.swapRowInMatrix(firstRowNum: Int, secondRowNum: Int) {
+    private fun Array<DoubleArray>.swapRows(firstRowNum: Int, secondRowNum: Int) {
         val firstRow = this[firstRowNum]
         this[firstRowNum] = this[secondRowNum]
         this[secondRowNum] = firstRow
     }
 
-    private fun DoubleArray.swapAnswers(firstRowNum: Int, secondRowNum: Int) {
+    private fun DoubleArray.swap(firstRowNum: Int, secondRowNum: Int) {
         val firstAnswer = this[firstRowNum]
         this[firstRowNum] = this[secondRowNum]
         this[secondRowNum] = firstAnswer
     }
 
-    /** function to print in row    echleon form  */
-    fun printRowEchelonForm(A: Array<DoubleArray>, B: DoubleArray) {
-        val N = B.size
-        println("\nRow Echelon form : ")
-        for (i in 0 until N) {
-            for (j in 0 until N)
-                System.out.printf("%.3f ", A[i][j])
-            System.out.printf("| %.3f\n", B[i])
+    private fun pivotWithin(startColumnNumber: Int) {
+        for (rowNum in startColumnNumber + 1 until matrixSize) {
+
+            val factor = matrix[rowNum][startColumnNumber] / matrix[startColumnNumber][startColumnNumber]
+            answers[rowNum] -= factor * answers[startColumnNumber]
+
+            for (columnNum in startColumnNumber until matrixSize) {
+                matrix[rowNum][columnNum] -= factor * matrix[startColumnNumber][columnNum]
+            }
+        }
+    }
+
+    private fun printRowEchelonForm() {
+        val answersSize = answers.size
+
+        println("Row Echelon form : ")
+
+        for (rowNum in 0 until answersSize) {
+            for (columnNum in 0 until answersSize) {
+                System.out.printf("%.3f ", matrix[rowNum][columnNum])
+            }
+            System.out.printf("| %.3f\n", answers[rowNum])
         }
         println()
     }
 
-    /** function to print solution  */
-    fun printSolution(sol: DoubleArray) {
-        val N = sol.size
-        println("\nSolution : ")
-        for (i in 0 until N)
-            System.out.printf("%.3f ", sol[i])
-        println()
+    private fun getSolution(): DoubleArray {
+        val solutions = DoubleArray(matrixSize)
+
+        for (rowNum in matrixSize - 1 downTo 0) {
+            var sum = 0.0
+
+            for (columnNum in rowNum + 1 until matrixSize) {
+                sum += matrix[rowNum][columnNum] * solutions[columnNum]
+            }
+            solutions[rowNum] = (answers[rowNum] - sum) / matrix[rowNum][rowNum]
+        }
+        return solutions
     }
 
+    private fun printSolution(solutions: DoubleArray) {
+        val solutionsSize = solutions.size
 
-    private fun Array<DoubleArray>.getMatrixViewFrom(): String {
+        println("\nSolution : ")
+
+        for (solutionNum in 0 until solutionsSize) {
+            System.out.printf("%.3f ", solutions[solutionNum])
+        }
+        println()
+    }
+    
+    private fun Array<DoubleArray>.print(): String {
         var a = "matrix = "
         for (column in 0 until this.size) {
             for (number in this[column]) {
