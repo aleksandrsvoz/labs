@@ -99,7 +99,7 @@ class GaussianElimination {
     private fun printSolution(solutions: DoubleArray) {
         val solutionsSize = solutions.size
 
-        println("\nSolution : ")
+        print("Solution : ")
 
         for (solutionNum in 0 until solutionsSize) {
             System.out.printf("%.3f ", solutions[solutionNum])
