@@ -106,7 +106,7 @@ class GaussianElimination {
         }
         println()
     }
-    
+
     private fun Array<DoubleArray>.print(): String {
         var a = "matrix = "
         for (column in 0 until this.size) {
